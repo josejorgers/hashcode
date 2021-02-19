@@ -1,27 +1,31 @@
 import numpy as np
-from scores import exact_score
 
-def build_sol(pizza_index, teams):
+def build_sol(pizza_index, teams, pizzas):
 
-    pi, ti = 0, 0
+    pi = 0
 
     pizza_n = len(pizza_index)
     team_n = len(teams)
 
     sol = []
     
+    score = 0
     for t in range(team_n):
         if pi + teams[t] <= pizza_n:
-            sol.append((teams[t], [pizza_index[i] for i in range(pi, pi + teams[t])]))
+            
+            delivery = [pizza_index[i] for i in range(pi, pi + teams[t])]
+            
+            value = np.array([pizzas[i].ingredients for i in delivery])
+            value = value.sum(axis=0)
+            value = np.where(value <= 1, value, 1)
+            value = value.sum() ** 2
+
+            score += value
+
+            sol.append((teams[t], delivery))
             pi += teams[t]
 
-    return sol
-            
-
-# def exact_solution(pizzas, teams_2, teams_3, teams_4):
-
-#     pizzas_left = len(pizzas)
-
+    return sol, score
 
 
 def random_search_solution(pizzas, teams_2, teams_3, teams_4, iterations=100):
@@ -29,18 +33,18 @@ def random_search_solution(pizzas, teams_2, teams_3, teams_4, iterations=100):
     teams = np.random.permutation(([2]*teams_2) + ([3]*teams_3) + ([4]*teams_4))
     pizza_index = np.random.permutation(list([i for i, _ in enumerate(pizzas)]))
 
-    sol = build_sol(pizza_index, teams)
-
-    score = exact_score(pizzas, sol)
+    sol, score = build_sol(pizza_index, teams, pizzas)
 
     for _ in range(iterations):
 
-        teams = np.random.permutation(teams)
-        pizza_index = np.random.permutation(pizza_index)
+        coin = np.random.uniform()
 
-        aux_sol = build_sol(pizza_index, teams)
+        if coin <= .5:
+            teams = np.random.permutation(teams)
+        else:
+            pizza_index = np.random.permutation(pizza_index)
 
-        aux_score = exact_score(pizzas, aux_sol)
+        aux_sol, aux_score = build_sol(pizza_index, teams, pizzas)
 
         if aux_score > score:
             score = aux_score

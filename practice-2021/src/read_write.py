@@ -34,15 +34,19 @@ def output_data(filename, deliveries):
     deliveries: (team_members, [list of pizza indices])
     '''
     
-    with open(os.path.join(DATA_OUTPUT_DIR, filename), 'x') as file:
-        n_teams = len(deliveries)
-        file.write(f'{n_teams}\n')
+    try:
+        file =  open(os.path.join(DATA_OUTPUT_DIR, filename), 'x')
+    except:
+        file = open(os.path.join(DATA_OUTPUT_DIR, filename), 'w')
+        
+    n_teams = len(deliveries)
+    file.write(f'{n_teams}\n')
 
-        for d in deliveries:
-            file.write(f'{d[0]}')
-            for pizza in d[1]:
-                file.write(f' {pizza}')
-            file.write('\n')
+    for d in deliveries:
+        file.write(f'{d[0]}')
+        for pizza in d[1]:
+            file.write(f' {pizza}')
+        file.write('\n')
 
 
 if __name__ == '__main__':
